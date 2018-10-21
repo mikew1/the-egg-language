@@ -32,8 +32,6 @@ var {skipSpace} = require('./skipSpace');
 
 function parseExpression(program) {
     program = skipSpace(program);
-    // must add a base case if this fn is to call itself:
-    if (program == '') return '';
     let match, expr;
     if        (match = /^"([^"]*)"/.exec(program)) {       // (1) match string in egg
         expr = {type: "value", value: match[1]        };
@@ -44,13 +42,8 @@ function parseExpression(program) {
     } else {
         throw new SyntaxError("Unexpected syntax: " + program);
     }
-    //return expr;                // <- we're returning expr at this pt. solely to test this fn
+    return expr;                // <- we're returning expr at this pt. solely to test this fn
     //return parseApply(expr, program.slice(match[0].length)); // <- we'll really return this
-
-    // Illustrate a recursive call to this function, for fun
-    // (we won't use this - will use mutual recurs. as defd above, on a fn will define shortly)
-    console.log(expr);                                      // print the expr found
-    return parseExpression(program.slice(match[0].length)); // do same on remainder of input
 }
 
 // run 'node egg' on this file to see the output of these calls:
