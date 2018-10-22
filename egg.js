@@ -44,15 +44,72 @@ function parseExpression(program) {
         throw new SyntaxError("Unexpected syntax: " + program);
     }
     //console.log(match);       // to examine regex output in detail, uncomment this.
-    return expr;                // <- we're returning expr at this pt. solely to test this fn
-    //return parseApply(expr, program.slice(match[0].length)); // <- we'll really return this
+    //return expr;              // to test function in isolation, uncomment this.
+    return parseApply(expr, program.slice(match[0].length)); // <- we'll really return this
 }
 
 // run 'node egg' on this file to see the output of these calls:
-console.log(parseExpression("an example sequence of 6 expressions"));
-console.log(parseExpression("this one includes a \"quoted string\""));
-console.log(parseExpression("run `node egg` & examine what is produced!"));
-// We want to parse these sequences of expressions into their corresponding data structures.
-// Note at present our code only parses the first expression for each line above then stops.
-// You should see 'an', 'this', and 'run' have been parsed. Next we'll parse the rest.
-// Check out the next commit to continue.
+console.log(parseExpression("will only parse 1st word now as this text is no longer a valid program"));
+console.log(parseExpression("a(now, valid, example)"));
+console.log(parseExpression("now(we,can,parse,valid,syntax!)"));
+console.log(parseExpression("note(the,result,of,an,application)(can,be,applied)"));
+// Note now that we have parseApply hooked in, we expect an application after a word.
+// Calling parseExpression alone on the first line above will just parse the first word and
+// return a non empty 'rest' field. Run this program to see this for yourself & make changes.
+// To tidy this situation, we add a new entry point, parse(), below, which also checks for an
+// unparsed rest of program, as is the case with the first ex. above, and alerts of syntax error.
+// Shortly, we'll remove the tests above, & change to use parse() below, which has a better
+// understanding of the true syntax of egg!
+
+/**
+ * Second recursive function. Checks whether the expression just parsed is an application.
+ * i.e., is it followed by an opening parens. If it is, parse the list of arguments.
+ * This function must return result of calling itself, not just of parseExpression,
+ * because remaining program after it has parsed one application could be another application.
+ * That is, we allow a return value to be a function itself, which could take arguments.
+ * Todo: try parsing a prog like that, then change rtn statement blw to make it break.
+ */
+function parseApply(expr, program) {
+    program = skipSpace(program);
+    if (program[0] != "(") {                          // base case. if expr just parsed
+        return {expr: expr, rest: program};           // was not an application, return an
+    }                                                 // _object_ representing the parse tree.
+
+    program = skipSpace(program.slice(1));            // remove opening parens
+    expr = {type: "apply", operator: expr, args: []}; // prepare what to rtn
+    while (program[0] != ")") {
+        let arg = parseExpression(program);           // parse the contents as an expression
+
+        expr.args.push(arg.expr);                     // push result to args array
+
+        program = skipSpace(arg.rest);                // skip space
+        if (program[0] == ",") {                      // allow comma
+            program = skipSpace(program.slice(1));
+        } else if (program[0] != ")") {
+            throw new SyntaxError("Expected ',', or ')'");
+        }
+    }
+    return parseApply(expr, program.slice(1));        // return parsed result of the rest
+}
+
+/**
+ * Finally, we just need a convenient parse function to check the end of the input string
+ * has been reached.
+ * Note: the strings we used previously above were just sequences of words for illustration.
+ *       as we move to using parse, below, they will no longer be legal program strings.
+ *       The Egg language is taking shape!
+ */
+function parse(program) {
+    let {expr, rest} = parseExpression(program);
+    if(skipSpace(rest).length > 0) {
+        throw new SyntaxError("Unexpected text after program");
+    }
+    return expr;
+}
+
+// We will now transition to using this method below to run our parse tests.
+// It has a better understanding of the meaning of a valid program in Egg!
+console.log(parse('now(we,will,use,this,method(instead,to,test))'));
+// Note: we don't see more than one level of depth.
+//       in console, we just see 'Object'.
+//       (we'll fix that next, so we can see the entire parse tree...)
