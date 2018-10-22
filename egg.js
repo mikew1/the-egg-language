@@ -21,6 +21,7 @@
  *            excl: white space,bracket, comma, space char, hash, dbl quote.
  * Qu: why does 1st regex also match zero, i.e. ""
  * Qu: why does 1st regex use match[1] & others match[0] (a typo?) -WORKS WITH EITHER!-
+ * Ans: do console.log(match) to see exactly what the re match array contains & will see.
  * Qu: why does 2nd regex require a word boundary \b & others dont.
  * Note: 3rd also catches number value, but 2nd regex will have caught it prior.
  * At this point, the function can be tested by simply returning expr.
@@ -42,6 +43,7 @@ function parseExpression(program) {
     } else {
         throw new SyntaxError("Unexpected syntax: " + program);
     }
+    //console.log(match);       // to examine regex output in detail, uncomment this.
     return expr;                // <- we're returning expr at this pt. solely to test this fn
     //return parseApply(expr, program.slice(match[0].length)); // <- we'll really return this
 }
