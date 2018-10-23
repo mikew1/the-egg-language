@@ -29,7 +29,7 @@
  * parseApply(), -this will be _mutual recursion_-, with the formed expr as its first
  * argument. The second argument is the remainder of the unparsed program string.
  */
-var {skipSpace} = require('./skipSpace');
+const {skipSpace, inspect} = require('./utils');
 
 function parseExpression(program) {
     program = skipSpace(program);
@@ -47,19 +47,6 @@ function parseExpression(program) {
     //return expr;              // to test function in isolation, uncomment this.
     return parseApply(expr, program.slice(match[0].length)); // <- we'll really return this
 }
-
-// run 'node egg' on this file to see the output of these calls:
-console.log(parseExpression("will only parse 1st word now as this text is no longer a valid program"));
-console.log(parseExpression("a(now, valid, example)"));
-console.log(parseExpression("now(we,can,parse,valid,syntax!)"));
-console.log(parseExpression("note(the,result,of,an,application)(can,be,applied)"));
-// Note now that we have parseApply hooked in, we expect an application after a word.
-// Calling parseExpression alone on the first line above will just parse the first word and
-// return a non empty 'rest' field. Run this program to see this for yourself & make changes.
-// To tidy this situation, we add a new entry point, parse(), below, which also checks for an
-// unparsed rest of program, as is the case with the first ex. above, and alerts of syntax error.
-// Shortly, we'll remove the tests above, & change to use parse() below, which has a better
-// understanding of the true syntax of egg!
 
 /**
  * Second recursive function. Checks whether the expression just parsed is an application.
@@ -107,9 +94,36 @@ function parse(program) {
     return expr;
 }
 
-// We will now transition to using this method below to run our parse tests.
-// It has a better understanding of the meaning of a valid program in Egg!
-console.log(parse('now(we,will,use,this,method(instead,to,test))'));
-// Note: we don't see more than one level of depth.
-//       in console, we just see 'Object'.
-//       (we'll fix that next, so we can see the entire parse tree...)
+// Using backticks lets us lay out our programs in egg more clearly.
+// Wrapping in inspect() lets us examine the parse tree to its full depth.
+// Note inspect simply lets us see the parse tree. What we'll really want to do,
+// next, is send this parse tree off to the evaluator.
+// But at this point, its worth pausing to make sure we understand the parsing process.
+
+// An example of a program in Egg
+// (comment this out when exploring your own program below)
+inspect(parse(`
+do(define(x, 10),
+   if(>(x, 5),
+      print("large"),
+      print("small")))
+`));
+// Notes on above
+// Note, function expressions in Egg are denoted by parens *after* an expression.
+// This is like most common languages, but unlike lisp, where parens comes first.
+// Note, 'if', 'do' & 'define' are actually special forms, not functions, we'll
+// add them in the next commit.  print is an ordinary function, which we'll also
+// add in the next commit. We can, right now, parse this program, becase we've
+// defined the syntactic rules for our language. But we can't yet recognise or
+// evaluate any of these special forms or functions, because our program doesn't
+// yet know how to do that. We'll add this ability in the next commit.
+
+// Change this to something of your own & inspect the parse tree:
+inspect(parse(`
+now(we,will,use,this,
+    method(instead,to,test))
+`));
+
+// In the next commit, we'll have to do three things: add the evaluator, add special forms,
+// (do, define, if, while), plus add our built-in arithmetic functions like '>'.
+// This should get us to the basic stage where we can execute a program in Egg!

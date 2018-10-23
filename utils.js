@@ -9,6 +9,11 @@ function skipSpace(string) {
     return string.slice(first);       // return with leading whitespace removed
 }
 
+function inspect(syntaxTree) {
+    console.log(require('util').inspect(syntaxTree, false, null, true));
+}
+
 module.exports = {
-    skipSpace: skipSpace
+    skipSpace: skipSpace,
+    inspect: inspect
 };
