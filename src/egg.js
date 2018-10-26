@@ -26,10 +26,39 @@ function run(program) {
 //    print(total))
 // `);
 
+// run(`
+// do(define(pow, fun(base, exp,
+//      if(==(exp, 0),
+//         1,
+//         *(base, pow(base, -(exp, 1)))))),
+//    print(pow(2, 10)))
+// `);
+
+// higher order function example:
 run(`
-do(define(pow, fun(base, exp,
-     if(==(exp, 0),
-        1,
-        *(base, pow(base, -(exp, 1)))))),
-   print(pow(2, 10)))
+do(
+  print("Create a fn that returns a fn:"),
+
+  print(
+    define(timesBy,
+        fun(p, define(anon,
+            fun(q, *(p, q)) ))
+    )),
+
+  print("A fn created at run time:"),
+
+  print(
+    define(function_created_at_runtime,
+        timesBy(4)
+    )),
+
+  print("Call it:"),
+  print(function_created_at_runtime(5)),
+
+
+  print("Create and call immediately (note syntax):"),
+
+  print(timesBy(4)(5))
+
+   )
 `);
