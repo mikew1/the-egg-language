@@ -106,6 +106,31 @@ specialForms.define = (args, scope) => {
                    // (unlike js, which returns undefined after an assignment)
 }
 
+specialForms.fun = (args, scope) => {
+    if (!args.length) {
+        throw new SyntaxError("Functions need a body");
+    }
+    let body = args[args.length - 1];
+    // check all params are words, & map into array of names
+    let params = args.slice(0, args.length - 1).map(expr => {
+        if (expr.type != "word") {
+            throw new SyntaxError("Parameter names must be words");
+        }
+        return expr.name;
+    });
+    // return user defined function as declared:
+    return function() {
+        if (arguments.length != params.length) {  // params above is closed into this fn
+            throw new TypeError("Wrong number of arguments");
+        }
+        let localScope = Object.create(scope);
+        for (let i = 0; i < arguments.length; i++) {
+            localScope[params[i]] = arguments[i]; // add arguments to localScope
+        }
+        return evaluate(body, localScope);        // eval using the localScope
+    };
+};
+
 module.exports = {
     evaluate: evaluate
 }
